@@ -1,0 +1,20 @@
+[global]
+developmentMode = false
+dataFrameSerialization = "legacy"
+
+[logger]
+level = "INFO"
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+maxMessageSize = 200
+enableWebsocketCompression = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8501
