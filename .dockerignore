@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+venv
+.venv
+
+# Airflow
+logs/
+airflow.db
+airflow.cfg
+
+# dbt
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.dbt/
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+
+# Docs
+*.md
+!README.md
+
+# Deployment
+deploy/

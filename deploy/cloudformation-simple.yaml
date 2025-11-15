@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Mocktailverse ETL - Simple Free Tier (S3 + Lambda + DynamoDB only)'
+
+Resources:
+  # S3 Buckets
+  RawDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'mocktailverse-raw-${AWS::AccountId}'
+
+  ProcessedDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'mocktailverse-processed-${AWS::AccountId}'
+
+  # DynamoDB
+  CocktailsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: mocktailverse-cocktails
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # Lambda Role
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                  - dynamodb:*
+                Resource: '*'
+
+  # Lambda Function
+  TransformFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: mocktailverse-transform
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import json
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': json.dumps('Ready - upload from repo')}
+
+Outputs:
+  RawBucket:
+    Value: !Ref RawDataBucket
+  ProcessedBucket:
+    Value: !Ref ProcessedDataBucket
+  DynamoTable:
+    Value: !Ref CocktailsTable
+  LambdaFunction:
+    Value: !Ref TransformFunction
