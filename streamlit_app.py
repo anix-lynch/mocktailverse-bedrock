@@ -24,6 +24,7 @@ from datetime import datetime, timedelta
 import json
 from botocore.exceptions import ClientError
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,9 +43,12 @@ st.set_page_config(
 def init_aws_clients():
     """Initialize AWS clients with error handling."""
     try:
-        s3_client = boto3.client('s3')
-        dynamodb_client = boto3.client('dynamodb')
-        athena_client = boto3.client('athena')
+        # Get region from secrets or environment
+        region = st.secrets.get("AWS_DEFAULT_REGION", os.environ.get("AWS_DEFAULT_REGION", "us-west-2"))
+        
+        s3_client = boto3.client('s3', region_name=region)
+        dynamodb_client = boto3.client('dynamodb', region_name=region)
+        athena_client = boto3.client('athena', region_name=region)
         return s3_client, dynamodb_client, athena_client
     except Exception as e:
         st.error(f"Failed to initialize AWS clients: {e}")
