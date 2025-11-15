@@ -43,12 +43,33 @@ st.set_page_config(
 def init_aws_clients():
     """Initialize AWS clients with error handling."""
     try:
-        # Get region from secrets or environment
+        # Get credentials from Streamlit secrets or environment
+        aws_access_key = st.secrets.get("AWS_ACCESS_KEY_ID", os.environ.get("AWS_ACCESS_KEY_ID"))
+        aws_secret_key = st.secrets.get("AWS_SECRET_ACCESS_KEY", os.environ.get("AWS_SECRET_ACCESS_KEY"))
         region = st.secrets.get("AWS_DEFAULT_REGION", os.environ.get("AWS_DEFAULT_REGION", "us-west-2"))
         
-        s3_client = boto3.client('s3', region_name=region)
-        dynamodb_client = boto3.client('dynamodb', region_name=region)
-        athena_client = boto3.client('athena', region_name=region)
+        if not aws_access_key or not aws_secret_key:
+            st.error("⚠️ AWS credentials not configured. Add them in Streamlit Cloud Secrets.")
+            return None, None, None
+        
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=region
+        )
+        dynamodb_client = boto3.client(
+            'dynamodb',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=region
+        )
+        athena_client = boto3.client(
+            'athena',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=region
+        )
         return s3_client, dynamodb_client, athena_client
     except Exception as e:
         st.error(f"Failed to initialize AWS clients: {e}")
