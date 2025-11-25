@@ -40,10 +40,18 @@ echo ""
 # Step 1: Package Lambda functions
 print_info "Step 1/4: Packaging Lambda functions..."
 
+PROJECT_ROOT=$(pwd)
 FUNCTIONS=("ingest" "embed" "search" "rag")
 
 for FUNC in "${FUNCTIONS[@]}"; do
     print_status "Packaging $FUNC..."
+    
+    cd "$PROJECT_ROOT"
+    
+    if [ ! -d "lambdas/$FUNC" ]; then
+        print_warn "Directory lambdas/$FUNC not found, skipping..."
+        continue
+    fi
     
     cd "lambdas/$FUNC"
     
@@ -54,12 +62,19 @@ for FUNC in "${FUNCTIONS[@]}"; do
         pip install -r requirements.txt -t package/ --quiet
     fi
     
-    cp handler.py package/
+    if [ -f handler.py ]; then
+        cp handler.py package/
+    else
+        print_warn "handler.py not found in lambdas/$FUNC"
+        continue
+    fi
     
     cd package
     zip -r ../deployment.zip . > /dev/null
-    cd ../..
+    cd "$PROJECT_ROOT"
 done
+
+cd "$PROJECT_ROOT"
 
 print_status "All Lambda functions packaged"
 echo ""
