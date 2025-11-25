@@ -1,0 +1,4 @@
+RAW_BUCKET=mocktailverse-raw
+PROCESSED_BUCKET=mocktailverse-processed
+REGION=us-east-1
+ACCOUNT_ID=340752826866
