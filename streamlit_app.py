@@ -33,13 +33,18 @@ st.markdown("""
 
 # AWS Configuration
 try:
-    # Initialize DynamoDB client
+    # Initialize DynamoDB client with proper secret handling
+    # Strip whitespace to handle TOML formatting issues
+    aws_key = str(st.secrets.get("aws", {}).get("AWS_ACCESS_KEY_ID", "")).strip()
+    aws_secret = str(st.secrets.get("aws", {}).get("AWS_SECRET_ACCESS_KEY", "")).strip()
+    aws_region = str(st.secrets.get("aws", {}).get("AWS_DEFAULT_REGION", "us-west-2")).strip()
+    
     dynamodb = boto3.resource('dynamodb',
-        region_name='us-east-1',
-        aws_access_key_id=st.secrets.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=st.secrets.get("AWS_SECRET_ACCESS_KEY")
+        region_name=aws_region,
+        aws_access_key_id=aws_key,
+        aws_secret_access_key=aws_secret
     )
-    table = dynamodb.Table('mocktailverse-drinks')
+    table = dynamodb.Table('mocktailverse-jobs')
     
     # Fetch data
     response = table.scan()
