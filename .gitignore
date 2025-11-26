@@ -25,7 +25,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 *.manifest
@@ -122,7 +121,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# ========================================
 # AWS Credentials and Keys (CRITICAL - NEVER COMMIT)
+# ========================================
 .aws/
 credentials
 config
@@ -130,6 +131,39 @@ config
 *.key
 *.p12
 *.pfx
+*credentials*
+*secret*
+*access_key*
+*ACCESS_KEY*
+*SECRET*
+.env
+.env.local
+.env.*.local
+
+# ========================================
+# Internal Documentation with Credentials (NEVER COMMIT)
+# ========================================
+AWS_AUTH.md
+KEY_ROTATION_COMPLETE.md
+SECURITY_FIX.md
+*.cursorrules
+.cursorrules
+
+# ========================================
+# Internal Communication/Setup Docs (May contain sensitive info)
+# ========================================
+DEPLOYMENT_STEPS.md
+BEDROCK_AGENTS_SETUP.md
+TECH_STACK_COMPARISON.md
+
+# ========================================
+# Terraform State Files (May contain sensitive data)
+# ========================================
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.backup
 
 # Airflow logs and database
 logs/
@@ -165,3 +199,18 @@ Thumbs.db
 *.temp
 .cache/
 .parquet
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/package-lock.json
+
+# Lambda deployment packages
+lambdas/*/deployment.zip
+*.zip
+
+# Terraform plans
+*.tfplan
+terraform/tfplan
+_private/

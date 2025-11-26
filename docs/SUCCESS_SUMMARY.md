@@ -25,7 +25,7 @@ Built a **production-ready AWS ETL pipeline** from scratch, following the Distro
 - **Shows**: Real-time AWS metrics, pipeline status, cocktail analytics
 
 ### 4. ✅ **AWS Free Tier** (Production Infrastructure)
-- **S3**: `mocktailverse-raw-340752826866` + `mocktailverse-processed-340752826866`
+- **S3**: `mocktailverse-raw-<AWS_ACCOUNT_ID>` + `mocktailverse-processed-<AWS_ACCOUNT_ID>`
 - **DynamoDB**: `mocktailverse-cocktails` (6 cocktails loaded)
 - **Lambda**: `mocktailverse-transform`
 - **Cost**: $0/month (100% free tier)

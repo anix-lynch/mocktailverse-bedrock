@@ -3,10 +3,16 @@
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Lambda%20%7C%20OpenSearch-orange?logo=amazon-aws)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
-![Cost](https://img.shields.io/badge/Cost-$25%2Fmonth-brightgreen)
+![Cost](https://img.shields.io/badge/Cost-$1-2%2Fmonth-brightgreen)
 ![Status](https://img.shields.io/badge/Status-Production-green)
 
 > **A production-ready GenAI data platform that transforms cocktail recipes into an intelligent, semantic search system with conversational AI—showcasing modern AI Data Engineering for 2025.**
+
+## 🎬 Demo
+
+![Mocktailverse Demo](./demo.gif)
+
+**Live Demo:** [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse) | **API:** [https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod](https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod)
 
 ---
 
@@ -47,16 +53,18 @@ Think of it as a **real-world example of AI Platform Engineering**—the kind of
 ```
 External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
                 ↓
-         Step Functions
+         EventBridge (Scheduled)
                 ↓
-    Embedding Pipeline (Bedrock Titan)
+    Embedding Pipeline (Bedrock Titan) → S3
                 ↓
-    OpenSearch Serverless (Vector DB)
+    DynamoDB (Metadata + Search)
                 ↓
-    API Gateway ← Next.js Frontend
+    API Gateway ← Next.js Frontend (CloudFront)
          ↓
-    RAG + Agent Endpoints
+    Search + RAG + Bedrock Agents Endpoints
 ```
+
+**Architecture:** Uses DynamoDB for search (cost-efficient). Bedrock Agents provide conversational AI with custom tools—no OpenSearch needed!
 
 **Full architecture diagram**: See [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 
@@ -70,9 +78,9 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
 - Generate flavor profiles, tasting notes, and categorizations automatically
 - Store enriched data in DynamoDB
 
-### 2. **Semantic Search**
+### 2. **Semantic Search** (DynamoDB-based)
 - Convert recipes into **1536-dimensional embeddings** (Bedrock Titan v2)
-- Index vectors in **OpenSearch Serverless**
+- DynamoDB-based search with intelligent filtering
 - Search by meaning, not just keywords
 - Example: "refreshing summer drinks" finds mojitos, lemonades, and spritzers
 
@@ -85,20 +93,23 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
   4. Calls Bedrock Claude to generate a grounded answer
 - Result: Accurate, contextual responses backed by real data
 
-### 4. **AI Bartender Agent**
-- Conversational interface powered by **Bedrock Agents**
+### 4. **Bedrock Agents** (Conversational AI with Custom Tools) ⭐
+- **AWS Bedrock Agents** with custom tools for intelligent cocktail assistance
 - Custom tools:
-  - `search_cocktails` - Find recipes by criteria
-  - `suggest_variation` - Create new variations
+  - `search_cocktails` - Find recipes by natural language queries
+  - `suggest_variation` - Create new cocktail variations
   - `get_tasting_notes` - Provide flavor analysis
-- Multi-turn conversations with memory
-- Guardrails to filter inappropriate content
+- Multi-turn conversations with session memory
+- DynamoDB-backed retrieval (no OpenSearch needed!)
+- Example: *"Find me a tropical drink"* → Agent uses search tool → Returns contextual recommendations
 
-### 5. **Event-Driven Orchestration**
-- **EventBridge** triggers on S3 uploads
-- **Step Functions Express** orchestrates workflows
+### 5. **Event-Driven Architecture**
+- **EventBridge** scheduled rule for daily ingestion
+- **Lambda functions** for processing (ingest, embed, search, rag)
 - No long-running servers—everything is serverless
-- Automatic retries and error handling
+- Automatic scaling and error handling
+
+**Note:** Step Functions Express planned for complex multi-stage workflows.
 
 ### 6. **Modern Frontend**
 - **Next.js 14** with App Router
@@ -111,41 +122,38 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
 
 ## 💰 Cost Breakdown
 
-Running this entire system costs **~$25/month** on AWS:
+**Current Deployment (MVP):** Running for **~$1-2/month** on AWS:
 
 | Service | Monthly Cost | Why |
 |---------|-------------|-----|
-| OpenSearch Serverless | $24.00 | Vector search (1 OCU minimum) |
+| CloudFront | $0.85 | 10GB transfer (first year free) |
+| DynamoDB | $0.25 | On-demand writes (25GB free tier) |
+| API Gateway | $0.04 | 10K requests |
 | Bedrock Claude | $0.30 | 100K tokens/month |
 | Bedrock Titan Embeddings | $0.10 | 1M tokens |
-| CloudFront | $0.85 | 10GB transfer |
-| DynamoDB | $0.25 | On-demand writes |
-| API Gateway | $0.04 | 10K requests |
-| Lambda | $0.00 | Free Tier |
-| S3 | $0.02 | 1GB storage |
-| **TOTAL** | **$25.56** | |
+| Lambda | $0.00 | Free Tier (1M requests) |
+| S3 | $0.02 | 1GB storage (5GB free tier) |
+| **TOTAL (MVP)** | **~$1.56** | |
 
-**Remaining from $200 credit**: $174.44 for scaling or experimentation.
+**Note:** Uses DynamoDB for search + Bedrock Agents for conversational AI. No OpenSearch needed—keeps costs low while showcasing cutting-edge GenAI tech!
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Infrastructure
-- **AWS Lambda** - Serverless compute
-- **AWS Step Functions** - Workflow orchestration
-- **Amazon S3** - Data lake storage
-- **Amazon DynamoDB** - Metadata store
-- **Amazon OpenSearch Serverless** - Vector database
-- **Amazon EventBridge** - Event-driven triggers
+### Infrastructure (Deployed)
+- **AWS Lambda** - Serverless compute (ingest, embed, search, rag, agent)
+- **Amazon S3** - Data lake storage (raw, embeddings, frontend)
+- **Amazon DynamoDB** - Metadata store + intelligent search
+- **Amazon EventBridge** - Scheduled ingestion triggers
 - **AWS API Gateway** - RESTful API layer
-- **Amazon CloudFront** - Global CDN
+- **Amazon CloudFront** - Global CDN for frontend
+- **AWS Bedrock Agents** - Conversational AI with custom tools ⭐
 
-### AI/ML
-- **AWS Bedrock Claude 3.5** - LLM for generation
+### AI/ML (Implemented)
+- **AWS Bedrock Claude 3.5** - LLM for metadata extraction and generation
 - **AWS Bedrock Titan Embeddings v2** - Vector embeddings
-- **AWS Bedrock Agents** - Conversational AI
-- **Bedrock Guardrails** - Content filtering
+- **AWS Bedrock Agents** - Conversational AI with custom tools ⭐
 
 ### Application
 - **Next.js 14** - React framework
@@ -215,10 +223,10 @@ curl -X POST https://api.mocktailverse.dev/v1/rag \
   -H "Content-Type: application/json" \
   -d '{"question": "What makes a good mojito?"}'
 
-# Agent endpoint
-curl -X POST https://api.mocktailverse.dev/agent/chat \
+# Bedrock Agent endpoint
+curl -X POST https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod/agent/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Suggest a tropical mocktail variation"}'
+  -d '{"message": "Find me a refreshing tropical drink", "session_id": "user-123"}'
 ```
 
 ---
@@ -366,4 +374,4 @@ I build production-ready AI systems that actually ship. This project demonstrate
 
 **Built with ❤️ using AWS Bedrock, Next.js, and a lot of coffee**
 
-*Last Updated: 2025-11-24 | Status: Production Ready | Cost: $25/month*
+*Last Updated: 2025-11-25 | Status: MVP Deployed | Cost: $1-2/month (MVP) | Full version: $25/month*

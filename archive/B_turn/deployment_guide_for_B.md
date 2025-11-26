@@ -24,10 +24,12 @@ aws configure
 ```
 
 **Enter your credentials:**
-- AWS Access Key ID: `AKIAU6VTTQHZHC7X2VO6`
-- AWS Secret Access Key: `pNz3sYsyaIXJ+re65WzDQ21eQPXoWP+CfSWKUjP+`
+- AWS Access Key ID: `YOUR_ACCESS_KEY_ID` (get from AWS Console → IAM → Security Credentials)
+- AWS Secret Access Key: `YOUR_SECRET_ACCESS_KEY` (get from AWS Console → IAM → Security Credentials)
 - Default region: `us-east-1`
 - Default output format: `json`
+
+**⚠️ SECURITY NOTE:** Never commit real AWS credentials to git! Use environment variables or AWS credentials file.
 
 ### Verify Configuration
 

@@ -41,7 +41,8 @@ data "aws_region" "current" {}
 
 # S3 Buckets
 resource "aws_s3_bucket" "raw" {
-  bucket = "${var.project_name}-raw-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-raw-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
   
   tags = {
     Name        = "${var.project_name}-raw"
@@ -51,7 +52,8 @@ resource "aws_s3_bucket" "raw" {
 }
 
 resource "aws_s3_bucket" "embeddings" {
-  bucket = "${var.project_name}-embeddings-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-embeddings-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
   
   tags = {
     Name        = "${var.project_name}-embeddings"
@@ -61,7 +63,8 @@ resource "aws_s3_bucket" "embeddings" {
 }
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project_name}-frontend-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-frontend-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
   
   tags = {
     Name        = "${var.project_name}-frontend"
@@ -97,19 +100,34 @@ resource "aws_s3_bucket_public_access_block" "embeddings" {
   restrict_public_buckets = true
 }
 
-# Frontend bucket - public for CloudFront
-resource "aws_s3_bucket_website_configuration" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "404.html"
+resource "aws_s3_bucket_versioning" "embeddings" {
+  bucket = aws_s3_bucket.embeddings.id
+  
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
+# Frontend bucket - CloudFront access only
+resource "aws_s3_bucket_public_access_block" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# CloudFront Origin Access Control for S3
+resource "aws_cloudfront_origin_access_control" "frontend" {
+  name                              = "${var.project_name}-frontend-oac"
+  description                       = "OAC for ${var.project_name} frontend bucket"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+# S3 Bucket Policy for CloudFront access
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
@@ -117,14 +135,23 @@ resource "aws_s3_bucket_policy" "frontend" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend.arn}/*"
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.frontend.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.frontend.arn
+          }
+        }
       }
     ]
   })
+
+  depends_on = [aws_cloudfront_distribution.frontend]
 }
 
 # DynamoDB Table
@@ -168,7 +195,8 @@ resource "aws_dynamodb_table" "metadata" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-lambda-role"
+  name                 = "${var.project_name}-lambda-role"
+  force_detach_policies = true
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -236,7 +264,8 @@ resource "aws_iam_role_policy" "lambda_policy" {
       {
         Effect = "Allow"
         Action = [
-          "bedrock:InvokeModel"
+          "bedrock:InvokeModel",
+          "bedrock:InvokeAgent"
         ]
         Resource = "*"
       },
@@ -334,6 +363,47 @@ resource "aws_lambda_function" "rag" {
   }
 }
 
+resource "aws_lambda_function" "agent" {
+  filename      = "${path.module}/../lambdas/agent/deployment.zip"
+  function_name = "${var.project_name}-agent"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "handler.lambda_handler"
+  runtime       = "python3.11"
+  timeout       = 60
+  memory_size   = 512
+
+  environment {
+    variables = {
+      METADATA_TABLE = aws_dynamodb_table.metadata.name
+      PROJECT_NAME   = var.project_name
+    }
+  }
+
+  tags = {
+    Name = "${var.project_name}-agent"
+  }
+}
+
+resource "aws_lambda_function" "search_tool" {
+  filename      = "${path.module}/../lambdas/search_tool/deployment.zip"
+  function_name = "${var.project_name}-search-tool"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "handler.lambda_handler"
+  runtime       = "python3.11"
+  timeout       = 30
+  memory_size   = 256
+
+  environment {
+    variables = {
+      METADATA_TABLE = aws_dynamodb_table.metadata.name
+    }
+  }
+
+  tags = {
+    Name = "${var.project_name}-search-tool"
+  }
+}
+
 # API Gateway
 resource "aws_apigatewayv2_api" "main" {
   name          = "${var.project_name}-api"
@@ -403,6 +473,26 @@ resource "aws_apigatewayv2_route" "rag" {
   target    = "integrations/${aws_apigatewayv2_integration.rag.id}"
 }
 
+resource "aws_apigatewayv2_integration" "agent" {
+  api_id           = aws_apigatewayv2_api.main.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.agent.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "agent" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "POST /agent/chat"
+  target    = "integrations/${aws_apigatewayv2_integration.agent.id}"
+}
+
+resource "aws_lambda_permission" "agent" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.agent.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "frontend" {
   enabled             = true
@@ -410,15 +500,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   price_class         = "PriceClass_100"
 
   origin {
-    domain_name = aws_s3_bucket_website_configuration.frontend.website_endpoint
-    origin_id   = "S3-${var.project_name}-frontend"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-    }
+    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id                = "S3-${var.project_name}-frontend"
+    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
   default_cache_behavior {

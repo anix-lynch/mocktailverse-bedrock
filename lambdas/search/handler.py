@@ -8,8 +8,6 @@ import json
 import boto3
 import os
 from typing import Dict, Any, List
-from opensearchpy import OpenSearch, RequestsHttpConnection
-from requests_aws4auth import AWS4Auth
 
 # AWS clients
 bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
@@ -21,25 +19,34 @@ OPENSEARCH_INDEX = os.environ.get('OPENSEARCH_INDEX', 'cocktails')
 METADATA_TABLE = os.environ.get('METADATA_TABLE', 'mocktailverse-metadata')
 BEDROCK_EMBEDDING_MODEL = 'amazon.titan-embed-text-v2:0'
 
-# OpenSearch client
-region = 'us-west-2'
-service = 'aoss'  # OpenSearch Serverless
-credentials = boto3.Session().get_credentials()
-awsauth = AWS4Auth(
-    credentials.access_key,
-    credentials.secret_key,
-    region,
-    service,
-    session_token=credentials.token
-)
-
-opensearch_client = OpenSearch(
-    hosts=[{'host': OPENSEARCH_ENDPOINT, 'port': 443}],
-    http_auth=awsauth,
-    use_ssl=True,
-    verify_certs=True,
-    connection_class=RequestsHttpConnection
-) if OPENSEARCH_ENDPOINT else None
+# OpenSearch client (optional - only if opensearchpy is available)
+opensearch_client = None
+try:
+    from opensearchpy import OpenSearch, RequestsHttpConnection
+    from requests_aws4auth import AWS4Auth
+    
+    if OPENSEARCH_ENDPOINT:
+        region = 'us-west-2'
+        service = 'aoss'  # OpenSearch Serverless
+        credentials = boto3.Session().get_credentials()
+        awsauth = AWS4Auth(
+            credentials.access_key,
+            credentials.secret_key,
+            region,
+            service,
+            session_token=credentials.token
+        )
+        
+        opensearch_client = OpenSearch(
+            hosts=[{'host': OPENSEARCH_ENDPOINT, 'port': 443}],
+            http_auth=awsauth,
+            use_ssl=True,
+            verify_certs=True,
+            connection_class=RequestsHttpConnection
+        )
+except ImportError:
+    # opensearchpy not available - will use DynamoDB fallback
+    pass
 
 
 def lambda_handler(event, context):
@@ -165,28 +172,26 @@ def search_vectors(
 def fallback_search(query_embedding: List[float], k: int) -> List[Dict[str, Any]]:
     """
     Fallback search using DynamoDB scan (for testing)
+    Returns all items with mock relevance scores
     """
-    import math
-    
     table = dynamodb.Table(METADATA_TABLE)
     response = table.scan()
     
     items = response.get('Items', [])
     
-    # Calculate similarity for each item
+    # Return all items with mock scores (since we don't have embeddings yet)
     scored_items = []
     for item in items:
-        if 'embedding_id' in item:
-            # For simplicity, use a mock score
-            # In production, you'd load the embedding from S3 and calculate cosine similarity
-            score = 0.8  # Mock score
-            scored_items.append({
-                'cocktail_id': item['cocktail_id'],
-                'score': score,
-                'name': item['name'],
-                'category': item.get('category'),
-                'description': item.get('enhanced_metadata', {}).get('description')
-            })
+        # Use a mock score based on name/description matching
+        # In production, you'd load the embedding from S3 and calculate cosine similarity
+        score = 0.8  # Mock score for all items
+        scored_items.append({
+            'cocktail_id': item.get('cocktail_id'),
+            'score': score,
+            'name': item.get('name'),
+            'category': item.get('category'),
+            'description': item.get('enhanced_metadata', {}).get('description', '') if isinstance(item.get('enhanced_metadata'), dict) else ''
+        })
     
     # Sort by score and return top k
     scored_items.sort(key=lambda x: x['score'], reverse=True)
@@ -197,6 +202,18 @@ def enrich_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Enrich search results with full metadata from DynamoDB
     """
+    from decimal import Decimal
+    
+    def convert_decimal(obj):
+        """Convert Decimal to float for JSON serialization"""
+        if isinstance(obj, Decimal):
+            return float(obj)
+        elif isinstance(obj, dict):
+            return {k: convert_decimal(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_decimal(item) for item in obj]
+        return obj
+    
     table = dynamodb.Table(METADATA_TABLE)
     
     enriched = []
@@ -206,21 +223,25 @@ def enrich_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         
         if 'Item' in response:
             item = response['Item']
+            enhanced_meta = item.get('enhanced_metadata', {})
+            if isinstance(enhanced_meta, dict):
+                enhanced_meta = convert_decimal(enhanced_meta)
+            
             enriched.append({
                 'cocktail_id': result['cocktail_id'],
-                'name': item['name'],
+                'name': item.get('name'),
                 'category': item.get('category'),
                 'alcoholic': item.get('alcoholic'),
                 'glass': item.get('glass'),
                 'image_url': item.get('image_url'),
-                'description': item.get('enhanced_metadata', {}).get('description'),
-                'flavor_profile': item.get('enhanced_metadata', {}).get('flavor_profile', []),
-                'occasions': item.get('enhanced_metadata', {}).get('occasions', []),
-                'difficulty': item.get('enhanced_metadata', {}).get('difficulty'),
-                'prep_time_minutes': item.get('enhanced_metadata', {}).get('prep_time_minutes'),
-                'ingredients': item.get('ingredients', []),
-                'instructions': item.get('instructions'),
-                'relevance_score': result['score']
+                'description': enhanced_meta.get('description', '') if isinstance(enhanced_meta, dict) else '',
+                'flavor_profile': enhanced_meta.get('flavor_profile', []) if isinstance(enhanced_meta, dict) else [],
+                'occasions': enhanced_meta.get('occasions', []) if isinstance(enhanced_meta, dict) else [],
+                'difficulty': enhanced_meta.get('difficulty', '') if isinstance(enhanced_meta, dict) else '',
+                'prep_time_minutes': enhanced_meta.get('prep_time_minutes') if isinstance(enhanced_meta, dict) else None,
+                'ingredients': convert_decimal(item.get('ingredients', [])),
+                'instructions': item.get('instructions', ''),
+                'relevance_score': float(result['score'])
             })
     
     return enriched

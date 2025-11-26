@@ -98,9 +98,12 @@ This will:
 
 ## 🔧 What's NOT Included (Optional Enhancements)
 
+- ⚠️ **Bedrock Agent** - Infrastructure created (Agent ID: ZG2Z7ULNLF), running in fallback mode
+  - Reason: Titan Text Lite doesn't support tool calling
+  - Options: (1) Keep fallback mode (~$0.10/month), or (2) Request Claude access (~$2/month)
+  - See `BEDROCK_AGENT_STATUS.md` for details
 - ❌ OpenSearch Serverless (saves $24/month, using DynamoDB fallback)
 - ❌ Custom domain (saves ~$12/year)
-- ❌ Bedrock Agents (can add later)
 - ❌ Step Functions workflows (using EventBridge instead)
 - ❌ Full Next.js features (chat UI, explore page)
 
@@ -151,10 +154,14 @@ API Gateway → Lambda (Search) → DynamoDB (Metadata)
 
 ## 🎉 Next Action
 
-**Run deployment:**
-```bash
-cd /Users/anixlynch/dev/northstar/02_mocktailverse
-./deploy.sh
-```
+**✅ DEPLOYED AND LIVE!**
 
-Then update gozeroshot.dev with the CloudFront URL!
+**Frontend**: https://<CLOUDFRONT_DOMAIN>.cloudfront.net/  
+**API**: https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod
+
+**Now:**
+1. Test the live frontend
+2. Update gozeroshot.dev portfolio with CloudFront URL
+3. Take screenshots/create demo GIF
+
+See `DEPLOYMENT_SUCCESS.md` for full details!

@@ -7,6 +7,7 @@ Trigger: EventBridge schedule or S3 upload
 import json
 import boto3
 import os
+import re
 from datetime import datetime
 from typing import Dict, Any, List
 import requests
@@ -19,7 +20,8 @@ bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
 # Environment variables
 RAW_BUCKET = os.environ.get('RAW_BUCKET', 'mocktailverse-raw')
 METADATA_TABLE = os.environ.get('METADATA_TABLE', 'mocktailverse-metadata')
-BEDROCK_MODEL = 'anthropic.claude-3-5-sonnet-20241022-v2:0'
+# Using Amazon Titan Text Lite - FREE, no form needed, perfect for demo
+BEDROCK_MODEL = 'amazon.titan-text-lite-v1'  # ✅ FREE, ON_DEMAND, ACTIVE
 
 
 def lambda_handler(event, context):
@@ -217,28 +219,36 @@ Return as JSON with keys: description, flavor_profile, occasions, difficulty, pr
         response = bedrock.invoke_model(
             modelId=BEDROCK_MODEL,
             body=json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 1000,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 1000,
+                    "temperature": 0.3,  # Lower temp for structured output
+                    "topP": 0.9
+                }
             })
         )
         
         response_body = json.loads(response['body'].read())
-        content = response_body['content'][0]['text']
+        content = response_body['results'][0]['outputText']
         
         # Parse JSON from response
-        # Claude might wrap it in markdown, so extract JSON
+        # Titan might wrap it in markdown, so extract JSON
         if '```json' in content:
             content = content.split('```json')[1].split('```')[0].strip()
         elif '```' in content:
             content = content.split('```')[1].split('```')[0].strip()
         
-        metadata = json.loads(content)
+        # Try to extract JSON object
+        try:
+            metadata = json.loads(content)
+        except:
+            # If parsing fails, try to find JSON object in text
+            json_match = re.search(r'\{[^{}]*\}', content)
+            if json_match:
+                metadata = json.loads(json_match.group())
+            else:
+                raise ValueError("No JSON found in response")
+        
         return metadata
     
     except Exception as e:

@@ -15,7 +15,8 @@ lambda_client = boto3.client('lambda')
 
 # Environment variables
 SEARCH_LAMBDA = os.environ.get('SEARCH_LAMBDA', 'mocktailverse-search')
-BEDROCK_MODEL = 'anthropic.claude-3-5-sonnet-20241022-v2:0'
+# Using Amazon Titan Text Lite - FREE, no form needed, perfect for demo
+BEDROCK_MODEL = 'amazon.titan-text-lite-v1'  # ✅ FREE, ON_DEMAND, ACTIVE
 
 
 def lambda_handler(event, context):
@@ -147,20 +148,17 @@ Answer:"""
         response = bedrock.invoke_model(
             modelId=BEDROCK_MODEL,
             body=json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 1000,
-                "temperature": 0.7,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+                "inputText": prompt,
+                "textGenerationConfig": {
+                    "maxTokenCount": 1000,
+                    "temperature": 0.7,
+                    "topP": 0.9
+                }
             })
         )
         
         response_body = json.loads(response['body'].read())
-        answer = response_body['content'][0]['text']
+        answer = response_body['results'][0]['outputText']
         
         return answer
     
