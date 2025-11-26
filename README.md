@@ -333,10 +333,10 @@ This isn't a tutorial project—it's a real AI platform that could handle produc
 
 ## 📚 Documentation
 
-- **[Architecture Guide](./ARCHITECTURE.md)** - Detailed system design
-- **[API Reference](./docs/API.md)** - Endpoint documentation
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Step-by-step setup
-- **[Cost Analysis](./docs/COSTS.md)** - Detailed cost breakdown
+- **[Technical Overview](./docs/TECHNICAL_OVERVIEW.md)** - Architecture and tech stack
+- **[Architecture Diagrams](./docs/ARCHITECTURE_MAPS.md)** - Visual system design
+- **[Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)** - Setup instructions
+- **[Bedrock Access Guide](./docs/BEDROCK_ACCESS_GUIDE.md)** - AWS Bedrock configuration
 
 ---
 
