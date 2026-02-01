@@ -1,5 +1,28 @@
 # 🍹 Mocktailverse: GenAI Data Engineering Platform
 
+> **Portfolio Snapshot (MVP Deployed)**  
+> This repository is a read-only snapshot of the deployed Mocktailverse MVP.  
+> Live demo: [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse)  
+> What to review: `lambdas/` (GenAI logic), `terraform/` (infra), `frontend/` (UI)
+
+## Recruiter Quick Scan (2 minutes)
+
+- What it is: GenAI platform with RAG + Agents, DynamoDB vector search, serverless orchestration, Next.js UI
+- Why it matters: Optimized for Truth / Search / Money / Fast
+
+KPI targets:
+
+- Truth: hallucination rate < 5%
+- Search: retrieval relevance > 80%
+- Money: cost per query < $0.01
+- Fast: p95 latency < 5s
+
+Where to look:
+
+- lambdas/ → GenAI runtime (ingest/embed/search/rag/agent)
+- terraform/ → infrastructure + cost decisions
+- frontend/ → Next.js chat/search UI
+
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Lambda%20%7C%20OpenSearch-orange?logo=amazon-aws)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
@@ -191,8 +214,8 @@ While this uses cocktail recipes as the domain, the **exact same architecture** 
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/anix-lynch/mocktailverse.git
-cd mocktailverse
+git clone https://github.com/anix-lynch/mocktailverse-bedrock.git
+cd mocktailverse-bedrock
 
 # 2. Deploy AWS infrastructure
 cd terraform
@@ -261,6 +284,18 @@ mocktailverse/
 └── README.md                 # You are here
 ```
 
+## Repository Map
+
+Production paths (current):
+- lambdas/ — GenAI runtime
+- terraform/ — infra as code
+- frontend/ — UI
+
+Legacy / experiments (not used in deployed MVP):
+- lambda/
+- legacy/
+- archive/
+
 ---
 
 ## 🎓 What I Learned
@@ -289,45 +324,92 @@ mocktailverse/
 
 ---
 
-## 🎤 Interview Talking Points
+## Reliability Guardrails (Production Mindset)
 
-### "What did you build?"
+- Retrieval-first: always fetch top-K recipes before generation (RAG)
+- Grounded answers: answer only from retrieved context
+- Refusal: return "I don't know" when context is missing
+- Bounded context: limit top-K and context size to control cost + truncation
+- Telemetry loop: tokens, latency, and interaction signals feed tuning
 
-> I built Mocktailverse, a GenAI-native data engineering platform that transforms cocktail recipe data into an intelligent semantic search system with conversational AI. It's a complete end-to-end pipeline showcasing modern AI platform engineering—from LLM-powered data extraction to RAG-based retrieval to conversational agents.
+## Core Outcomes
 
-### "Why does this demonstrate GenAI Data Engineering?"
+- Grounded responses (Truth)
+- Clarification-first behavior (Search)
+- Low cost per query (Money)
+- Fast responses (Fast)
 
-> This shows the fundamental shift from traditional ETL to AI-native systems. Instead of just moving data from A to B, I'm using LLMs for metadata extraction, generating embeddings for semantic search, implementing RAG for grounded retrieval, and deploying conversational agents. These are the exact skills companies need for building GenAI products in 2025.
+### System Design: Truth / Search / Money / Fast
 
-### "What makes this production-ready?"
+```
+🍹 MOCKTAILVERSE — WHAT IT ACHIEVES (WITH KPIs)
 
-> It's 100% serverless, event-driven, and cost-optimized. The entire system runs for $25/month on AWS, scales automatically, has zero infrastructure to manage, and includes proper observability with CloudWatch. I used Step Functions for orchestration, Bedrock for LLM inference, OpenSearch for vector search, and CloudFront for global distribution—all AWS-native services that enterprises actually use.
+├── ✅ TRUTH — AI doesn't make stuff up
+│   (Hallucination Rate < 5%)
+│
+│   ├── Always looks at real recipes first
+│   │   (RAG retrieval → DynamoDB KNN)
+│   │
+│   ├── Answers only from what it finds
+│   │   (grounded prompt → Claude)
+│   │
+│   ├── Says "I don't know" when context is missing
+│   │   (refusal rule)
+│   │
+│   └── Keeps creativity low for factual answers
+│       (temperature ≤ 0.3)
+│
+├── ✅ SEARCH — AI asks smart questions instead of guessing
+│   (Retrieval Relevance > 80%)
+│
+│   ├── Measures confidence in retrieved results
+│   │   (top-K relevance score)
+│   │
+│   ├── If confidence is low, asks user follow-up
+│   │   (clarification loop)
+│   │
+│   ├── Uses tools when action is needed
+│   │   (Bedrock Agents → Lambda tools)
+│   │
+│   └── Verifies tool results before answering
+│       (post-tool grounding)
+│
+├── ✅ MONEY — Each answer costs very little
+│   (Cost per Query < $0.01)
+│
+│   ├── Limits how much context is sent to the model
+│   │   (bounded top-K, context usage < 80%)
+│   │
+│   ├── Uses DynamoDB instead of expensive vector DBs
+│   │   (DynamoDB KNN vs OpenSearch)
+│   │
+│   ├── Uses Titan embeddings for cheap vectorization
+│   │   (Bedrock Titan)
+│   │
+│   ├── Runs everything serverless
+│   │   (Lambda + API Gateway)
+│   │
+│   └── Tracks token usage and cost per request
+│       (telemetry)
+│
+└── ✅ FAST — Responses feel instant
+    (p95 Latency < 5s)
 
-### "What's the technical depth?"
-
-> I implemented:
-> - Multi-stage embedding pipeline with cosine similarity deduplication
-> - KNN vector search with OpenSearch
-> - RAG architecture with context retrieval and prompt engineering
-> - Bedrock Agents with custom tools and guardrails
-> - Event-driven workflows with Step Functions
-> - Infrastructure as Code with Terraform
-> - Next.js frontend with SSR and API integration
-
-This isn't a tutorial project—it's a real AI platform that could handle production traffic.
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Multi-modal search (image + text)
-- [ ] Fine-tuned embedding model for cocktail domain
-- [ ] Real-time streaming responses
-- [ ] A/B testing framework for prompts
-- [ ] Cost analytics dashboard
-- [ ] Multi-region deployment
-- [ ] GraphQL API layer
-- [ ] Mobile app (React Native)
+    ├── Parallel retrieval + tool execution
+    │   (async paths)
+    │
+    ├── Lightweight orchestration
+    │   (Lambda router)
+    │
+    ├── Minimal prompt size
+    │   (context trimming)
+    │
+    ├── Global frontend delivery
+    │   (Next.js + CDN)
+    │
+    └── Monitors p95 response time
+        (latency telemetry)
+```
 
 ---
 

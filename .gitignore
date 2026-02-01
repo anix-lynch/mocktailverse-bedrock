@@ -214,3 +214,6 @@ lambdas/*/deployment.zip
 *.tfplan
 terraform/tfplan
 _private/
+
+# Private interview prep notes
+for-bchan-eyes-only.md
