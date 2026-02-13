@@ -215,7 +215,6 @@ lambdas/*/deployment.zip
 terraform/tfplan
 _private/
 
-# Private interview prep notes
 for-bchan-eyes-only.md
 
 # Deprecated code (kept for reference, not for production)
@@ -235,6 +234,9 @@ scripts/deployment.zip
 # Hide system files
 .DS_Store
 
-# AI helper files (local only)
 AI_CONTEXT.md
 *_BACKUP.md
+
+archive/
+docs/_archive/
+.local-files-info.txt

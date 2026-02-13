@@ -1,47 +1,44 @@
 # 🍹 Mocktailverse: GenAI Data Engineering Platform
 
-> **Portfolio Snapshot (MVP Deployed)**  
-> This repository is a read-only snapshot of the deployed Mocktailverse MVP.  
-> Live demo: [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse)  
-> What to review: `lambdas/` (GenAI logic), `terraform/` (infra), `frontend/` (UI)
+**Live Demo:** [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse)
 
-## Recruiter Quick Scan (2 minutes)
-
-- What it is: GenAI platform with RAG + Agents, DynamoDB vector search, serverless orchestration, Next.js UI
-- Why it matters: Optimized for Truth / Search / Money / Fast
-
-KPI targets:
-
-- Truth: hallucination rate < 5%
-- Search: retrieval relevance > 80%
-- Money: cost per query < $0.01
-- Fast: p95 latency < 5s
-
-Where to look:
-
-- lambdas/ → GenAI runtime (ingest/embed/search/rag/agent)
-- terraform/ → infrastructure + cost decisions
-- frontend/ → Next.js chat/search UI
-
-![AWS](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Lambda%20%7C%20OpenSearch-orange?logo=amazon-aws)
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
-![Cost](https://img.shields.io/badge/Cost-$1-2%2Fmonth-brightgreen)
-![Status](https://img.shields.io/badge/Status-Production-green)
-
-> **A production-ready GenAI data platform that transforms cocktail recipes into an intelligent, semantic search system with conversational AI—showcasing modern AI Data Engineering for 2025.**
-
-## 🎬 Demo
-
-![Mocktailverse Demo](./demo.gif)
-
-**Live Demo:** [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse) | **API:** [https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod](https://<API_GATEWAY_ID>.execute-api.us-west-2.amazonaws.com/prod)
+> A production-ready GenAI data platform demonstrating modern AI engineering with RAG, semantic search, and conversational agents on AWS.
 
 ---
 
-## 🎯 What This Is
+## Overview
 
-Mocktailverse isn't your typical ETL pipeline. It's a **GenAI-native data engineering system** that demonstrates how modern AI platforms are built:
+Mocktailverse is a serverless GenAI platform that transforms cocktail recipes into an intelligent search system with:
+
+- **RAG Pipeline** - Retrieval-Augmented Generation for grounded responses
+- **Semantic Search** - Vector embeddings with DynamoDB KNN
+- **Bedrock Agents** - Conversational AI with custom tools
+- **Event-Driven** - Serverless Lambda + EventBridge architecture
+- **Cost-Optimized** - $1-2/month runtime (MVP)
+
+**Stack:** AWS Lambda, Bedrock (Titan), DynamoDB, Next.js 14
+
+---
+
+## Architecture
+
+```
+External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
+                ↓
+         EventBridge (Scheduled)
+                ↓
+    Embedding Pipeline (Bedrock Titan) → S3
+                ↓
+    DynamoDB (Metadata + Search)
+                ↓
+    API Gateway ← Next.js Frontend (CloudFront)
+         ↓
+    Search + RAG + Agent Endpoints
+```
+
+See [docs/architecture/](docs/architecture/) for detailed system design.
+
+---
 
 - **LLM-powered metadata extraction** using AWS Bedrock
 - **Semantic vector search** with embeddings and KNN

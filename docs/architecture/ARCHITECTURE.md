@@ -215,29 +215,3 @@
 | Scheduled jobs | Serverless orchestration |
 | Relational DB | Vector DB + NoSQL |
 
-## Interview Talking Points
-
-**"What did you build?"**
-
-> I built Mocktailverse, a GenAI-native data engineering platform that transforms traditional cocktail recipe data into an intelligent, semantic search system with conversational AI capabilities. It's a complete end-to-end pipeline showcasing modern AI platform engineering.
-
-**"Why does this matter?"**
-
-> This demonstrates the shift from traditional ETL to AI-native data systems. Instead of just moving data from A to B, I'm using LLMs for metadata extraction, generating embeddings for semantic search, implementing RAG for grounded retrieval, and deploying conversational agents—all the core skills needed for GenAI Data Engineering roles in 2025.
-
-**"What makes this production-ready?"**
-
-> It's 100% serverless, event-driven, and cost-optimized. The entire system runs for ~$25/month on AWS, scales automatically, has zero infrastructure to manage, and includes proper observability. I used Step Functions for orchestration, Bedrock for LLM inference, OpenSearch for vector search, and CloudFront for global distribution.
-
-**"What's the technical depth?"**
-
-> I implemented:
-> - Multi-stage embedding pipeline with deduplication
-> - KNN vector search with cosine similarity
-> - RAG architecture with context retrieval
-> - Bedrock Agents with custom tools and guardrails
-> - Event-driven workflows with Step Functions
-> - Infrastructure as Code with Terraform
-> - Next.js frontend with API integration
-
-This isn't a toy project—it's a real AI platform that could handle production traffic.
