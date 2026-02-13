@@ -39,9 +39,9 @@ cd scripts/deployment
 ./deploy-lambdas.sh
 ```
 
-Requires AWS credentials (e.g. `source ~/.config/secrets/global.env`).
+Requires AWS credentials (load locally; never commit secrets).
 
 ## Internal docs
 
-- **Deployment steps / secrets / account details:** Local only (see `AI_CONTEXT.md` or `docs/_archive/DEPLOYMENT_GUIDE.md` if present on your machine).
+- **Secrets, account IDs, bucket names:** Keep local only; never in this repo.
 - **Scripts:** `scripts/deployment/` for all deploy and helper scripts.
