@@ -36,7 +36,7 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
     Search + RAG + Agent Endpoints
 ```
 
-See [docs/architecture/](docs/architecture/) for detailed system design.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design.
 
 ---
 
