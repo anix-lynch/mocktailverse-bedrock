@@ -1,0 +1,18 @@
+# Local Files (Not on GitHub)
+
+These files exist locally but are hidden from GitHub:
+
+## AI_CONTEXT.md
+- Purpose: Context for future AI agents
+- Contains: AWS info, deployment workflows, secrets locations
+- Why local: Looks too "AI-assisted" for hiring managers
+
+## docs/_archive/
+- Purpose: Verbose documentation archive
+- Contains: Interview prep, detailed walkthroughs
+- Why local: Keep GitHub clean and professional
+
+## How to Access
+These files are in your repo but ignored by git.
+They won't be pushed to GitHub.
+Future AI agents can read them from your local copy.

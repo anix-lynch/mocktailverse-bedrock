@@ -234,3 +234,7 @@ scripts/deployment.zip
 
 # Hide system files
 .DS_Store
+
+# AI helper files (local only)
+AI_CONTEXT.md
+*_BACKUP.md

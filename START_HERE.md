@@ -1,29 +1,14 @@
-# 🚀 Mocktailverse - Start Here
+# Mocktailverse
 
-## For Learning (You)
+## Quick Start
 
-1. **See structure:** [`STRUCTURE.md`](STRUCTURE.md) - Folder layout + data flow
-2. **Read flow diagram:** [`docs/architecture/GENAI_FLOW_MAPPING.md`](docs/architecture/GENAI_FLOW_MAPPING.md)
-3. **Read code:** Start with `backend/lambdas/` (read handlers in any order)
+**Structure:** See [STRUCTURE.md](STRUCTURE.md) for folder layout
 
-**That's it. Learn from code, not docs.**
+**Architecture:** See [docs/architecture/](docs/architecture/) for system design
 
----
+**Code:** Production code is in `backend/lambdas/` and `frontend/app/`
 
-## For AI Agents (Future)
-
-Read: [`AI_CONTEXT.md`](AI_CONTEXT.md)
-
-Everything you need:
-- AWS credentials location
-- Deployed resources
-- Secrets management
-- Deployment workflows
-- Common commands
-
----
-
-## Quick Test
+## Local Development
 
 ```bash
 # Test API
@@ -32,6 +17,8 @@ curl -X POST https://3m4c6fyw35.execute-api.us-west-2.amazonaws.com/prod/search 
   -d '{"query":"mojito"}'
 ```
 
----
+## Deployment
+
+See `scripts/deployment/` for deploy scripts.
 
 **Live:** https://gozeroshot.dev/mocktailverse
