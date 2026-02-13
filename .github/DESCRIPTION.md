@@ -15,9 +15,10 @@ AWS Bedrock-powered semantic search & RAG system with LLM metadata extraction, v
 `aws-bedrock` `genai` `rag` `vector-search` `semantic-search` `llm` `embeddings` `data-engineering` `ai-platform` `serverless` `terraform` `nextjs` `claude` `titan` `python` `typescript`
 
 ## Quick Links
-- 📖 [Full Documentation](./README.md)
+- 📖 [README](./README.md)
 - 🏗️ [Architecture](./ARCHITECTURE.md)
-- 💼 [Portfolio](https://dgco3hnxo94y8.cloudfront.net)
+- 🚀 [Deployment](./DEPLOYMENT.md)
+- 💼 [Live Demo](https://dgco3hnxo94y8.cloudfront.net)
 
 ---
 
