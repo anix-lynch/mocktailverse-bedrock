@@ -1,6 +1,0 @@
-# Streamlit Cloud - Minimal requirements for dashboard only
-streamlit>=1.28.0
-plotly>=5.15.0
-boto3>=1.28.0
-pandas>=2.0.0
-python-dotenv>=1.0.0

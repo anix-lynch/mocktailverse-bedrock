@@ -1,0 +1,7 @@
+# Hide messy folders from Cursor IDE file tree
+_deprecated/
+archive/
+lambdas/
+data/
+scripts/deployment.zip
+.DS_Store

@@ -217,3 +217,20 @@ _private/
 
 # Private interview prep notes
 for-bchan-eyes-only.md
+
+# Deprecated code (kept for reference, not for production)
+_deprecated/
+lambdas/  # Old structure, superseded by backend/lambdas/
+
+# Hide deprecated code from IDE view
+_deprecated/
+lambdas/
+archive/
+data/
+
+# Hide deployment artifacts
+scripts/deployment.zip
+*.zip
+
+# Hide system files
+.DS_Store
