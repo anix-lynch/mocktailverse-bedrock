@@ -1,6 +1,6 @@
 # 🍹 Mocktailverse: GenAI Data Engineering Platform
 
-**Live Demo:** [https://gozeroshot.dev/mocktailverse](https://gozeroshot.dev/mocktailverse)
+**Live Demo:** [https://dgco3hnxo94y8.cloudfront.net](https://dgco3hnxo94y8.cloudfront.net)
 
 > A production-ready GenAI data platform demonstrating modern AI engineering with RAG, semantic search, and conversational agents on AWS.
 

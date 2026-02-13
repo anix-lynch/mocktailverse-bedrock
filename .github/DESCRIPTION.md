@@ -17,7 +17,7 @@ AWS Bedrock-powered semantic search & RAG system with LLM metadata extraction, v
 ## Quick Links
 - 📖 [Full Documentation](./README.md)
 - 🏗️ [Architecture](./ARCHITECTURE.md)
-- 💼 [Portfolio](https://gozeroshot.dev)
+- 💼 [Portfolio](https://dgco3hnxo94y8.cloudfront.net)
 
 ---
 
