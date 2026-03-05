@@ -240,3 +240,5 @@ AI_CONTEXT.md
 archive/
 docs/_archive/
 .local-files-info.txt
+scripts/deployment/
+scripts/deployment.zip
