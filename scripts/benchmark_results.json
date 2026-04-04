@@ -1,0 +1,11 @@
+{
+  "n": 100,
+  "p50_ms": 577,
+  "p95_ms": 581,
+  "p99_ms": 605,
+  "min_ms": 572,
+  "max_ms": 606,
+  "simulated_bedrock_ms": 450,
+  "simulated_search_ms": 120,
+  "note": "local mock benchmark \u2014 not deployed prod measurement"
+}
