@@ -1,4 +1,4 @@
-# 🍹 Mocktailverse: GenAI Data Engineering Platform
+#  Mocktailverse: GenAI Data Engineering Platform
 
 **Live Demo:** [https://dgco3hnxo94y8.cloudfront.net](https://dgco3hnxo94y8.cloudfront.net)
 
@@ -116,7 +116,7 @@ Think of it as a **real-world example of AI Platform Engineering**—the kind of
 
 ---
 
-## 🚀 Why This Matters
+##  Why This Matters
 
 ### Traditional ETL vs GenAI Data Engineering
 
@@ -155,7 +155,7 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### 1. **AI-Powered Ingestion**
 - Fetch cocktail data from external APIs
@@ -205,7 +205,7 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
 
 ---
 
-## 💰 Cost Breakdown
+##  Cost Breakdown
 
 **Current Deployment (MVP):** Running for **~$1-2/month** on AWS:
 
@@ -249,7 +249,7 @@ External APIs → S3 → Lambda (Bedrock LLM) → DynamoDB
 
 ---
 
-## 📊 Real-World Use Cases
+##  Real-World Use Cases
 
 While this uses cocktail recipes as the domain, the **exact same architecture** applies to:
 
@@ -263,7 +263,7 @@ While this uses cocktail recipes as the domain, the **exact same architecture** 
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - AWS Account with Bedrock access
@@ -404,7 +404,7 @@ Legacy / experiments (not used in deployed MVP):
 ### System Design: Truth / Search / Money / Fast
 
 ```
-🍹 MOCKTAILVERSE — WHAT IT ACHIEVES (WITH KPIs)
+ MOCKTAILVERSE — WHAT IT ACHIEVES (WITH KPIs)
 
 ├── ✅ TRUTH — AI doesn't make stuff up
 │   (Hallucination Rate < 5%)
