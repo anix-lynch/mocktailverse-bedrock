@@ -6,6 +6,71 @@
 
 ---
 
+---
+
+## Repository structure
+
+```
+mocktailverse-bedrock/
+├── data/
+│   ├── raw/
+│   │   └── README.md
+│   ├── dynamodb_schema.json
+│   ├── margarita_recipes.json
+│   ├── response.json
+│   └── test_payload.json
+├── frontend/
+│   ├── app/
+│   │   ├── components/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── public/
+│   │   └── favicon.ico
+│   ├── next-env.d.ts
+│   ├── next.config.js
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── tsconfig.json
+├── infra/
+│   └── terraform/
+│       └── main.tf
+├── lambdas/
+│   ├── agent/
+│   │   ├── handler.py
+│   │   └── requirements.txt
+│   ├── embed/
+│   │   ├── handler.py
+│   │   └── requirements.txt
+│   ├── ingest/
+│   │   ├── handler.py
+│   │   └── requirements.txt
+│   ├── rag/
+│   │   ├── handler.py
+│   │   ├── rag_langgraph.py
+│   │   └── requirements.txt
+│   ├── search/
+│   │   ├── handler.py
+│   │   └── requirements.txt
+│   └── search_tool/
+│       ├── handler.py
+│       └── requirements.txt
+├── scripts/
+│   ├── .bucket_config
+│   ├── benchmark.py
+│   └── benchmark_results.json
+├── workflows/
+│   └── README.md
+├── .cursorignore
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── ARCHITECTURE.md
+├── DEPLOYMENT.md
+└── README.md
+```
+
 ## Overview
 
 Mocktailverse is a serverless GenAI platform that transforms cocktail recipes into an intelligent search system with:
