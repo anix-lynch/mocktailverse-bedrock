@@ -214,4 +214,3 @@
 | Manual data quality | AI-driven validation |
 | Scheduled jobs | Serverless orchestration |
 | Relational DB | Vector DB + NoSQL |
-
