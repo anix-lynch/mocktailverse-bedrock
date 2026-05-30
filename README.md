@@ -1,5 +1,7 @@
 #  Mocktailverse: GenAI Data Engineering Platform
 
+> 🟦 **L2 Action** part of the [L1→L3 healthcare AI platform](https://gozeroshot.dev) — Truth → Features → Signals → Actions → Human adoption. This repo = a self-healing serverless RAG platform on AWS Bedrock.
+
 **Live Demo:** [https://dgco3hnxo94y8.cloudfront.net](https://dgco3hnxo94y8.cloudfront.net)
 
 > A production-ready GenAI data platform demonstrating modern AI engineering with RAG, semantic search, and conversational agents on AWS.
