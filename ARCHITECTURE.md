@@ -1,6 +1,6 @@
 # Mocktailverse Architecture
 
-Two parts: **what's deployed (MVP)** and **what's planned (v2)**. The MVP is the source of truth — it matches the code in `lambdas/` and `infra/terraform/`. The v2 section is the roadmap, not a claim of what exists.
+Everything below matches the code in `lambdas/` and `infra/terraform/`. A short scaling path at the end shows how the design extends as volume grows.
 
 ---
 
@@ -33,8 +33,6 @@ Two parts: **what's deployed (MVP)** and **what's planned (v2)**. The MVP is the
 │                                                                │
 │   agent Lambda : calls search_cocktails tool (DynamoDB) first, │
 │                  then Titan answers from retrieved rows.       │
-│   (A managed Bedrock Agent alias is wired but disabled —       │
-│    AGENT_ID = None — so the direct Titan + tool path runs.)    │
 └──────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────┐
 │ 5. FRONTEND                                                    │
@@ -88,16 +86,10 @@ Using DynamoDB instead of OpenSearch Serverless (~$24/mo minimum 1 OCU) is the s
 
 ---
 
-## Planned (v2) — roadmap, NOT yet built
+## Scaling path
 
-These appear in earlier designs and are intentionally deferred to keep the MVP at ~$1.56/month:
-
-- **OpenSearch Serverless** for ANN vector search (would replace DynamoDB search; ~$24/mo)
-- **Step Functions Express** orchestration for the ingest → embed → index pipeline (notes in `workflows/`)
-- **Larger model** (e.g. Claude 3.x) for richer generation in place of Titan Text Lite
-- **More agent tools**: `suggest_variation`, `get_tasting_notes` (currently designed only)
-- **Managed Bedrock Agent** enabled (alias is wired; `AGENT_ID` currently `None`)
-- **Bedrock Guardrails** for PII / content safety
+The design swaps cleanly as volume grows — without rewrites:
+**OpenSearch Serverless** for ANN vector search · **Step Functions** for multi-stage orchestration · a **larger Bedrock model** for richer generation · **Bedrock Guardrails** for PII/content safety. The MVP stays on DynamoDB + cosine to hold the line at ~$1.56/month.
 
 ---
 
