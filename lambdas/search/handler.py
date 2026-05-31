@@ -1,10 +1,13 @@
 """
 Lambda: Vector Search
-Purpose: Semantic search using OpenSearch Serverless
+Purpose: Semantic search. Default path = real cosine similarity over Titan v2
+         embeddings stored in S3 (cheap, no OpenSearch). OpenSearch Serverless KNN
+         is an optional v2 path, used only if OPENSEARCH_ENDPOINT is configured.
 Trigger: API Gateway /v1/search endpoint
 """
 
 import json
+import math
 import boto3
 import os
 from typing import Dict, Any, List
@@ -12,11 +15,13 @@ from typing import Dict, Any, List
 # AWS clients
 bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
 dynamodb = boto3.resource('dynamodb')
+s3 = boto3.client('s3')
 
 # Environment variables
 OPENSEARCH_ENDPOINT = os.environ.get('OPENSEARCH_ENDPOINT')
 OPENSEARCH_INDEX = os.environ.get('OPENSEARCH_INDEX', 'cocktails')
 METADATA_TABLE = os.environ.get('METADATA_TABLE', 'mocktailverse-metadata')
+EMBEDDINGS_BUCKET = os.environ.get('EMBEDDINGS_BUCKET', 'mocktailverse-embeddings')
 BEDROCK_EMBEDDING_MODEL = 'amazon.titan-embed-text-v2:0'
 
 # OpenSearch client (optional - only if opensearchpy is available)
@@ -117,8 +122,8 @@ def search_vectors(
     Search OpenSearch using KNN
     """
     if not opensearch_client:
-        # Fallback: simple DynamoDB scan (for testing without OpenSearch)
-        return fallback_search(query_embedding, k)
+        # Default path: real cosine similarity over S3-stored Titan v2 embeddings.
+        return dynamodb_vector_search(query_embedding, k)
     
     # Build OpenSearch query
     query_body = {
@@ -169,22 +174,21 @@ def search_vectors(
     return results
 
 
-def fallback_search(query_embedding: List[float], k: int) -> List[Dict[str, Any]]:
+def dynamodb_vector_search(query_embedding: List[float], k: int) -> List[Dict[str, Any]]:
     """
-    Fallback search using DynamoDB scan (for testing)
-    Returns all items with mock relevance scores
+    Real semantic search without OpenSearch: scan embedded items in DynamoDB, load
+    each item's stored Titan v2 embedding from S3, rank by cosine similarity to the
+    query, return the true top-k. No mock scores.
     """
     table = dynamodb.Table(METADATA_TABLE)
-    response = table.scan()
-    
-    items = response.get('Items', [])
-    
-    # Return all items with mock scores (since we don't have embeddings yet)
+    items = table.scan(FilterExpression='attribute_exists(embedding_id)').get('Items', [])
+
     scored_items = []
     for item in items:
-        # Use a mock score based on name/description matching
-        # In production, you'd load the embedding from S3 and calculate cosine similarity
-        score = 0.8  # Mock score for all items
+        item_embedding = load_primary_embedding(item.get('embedding_id'))
+        if not item_embedding:
+            continue  # skip items whose embedding can't be loaded — never fake a score
+        score = cosine_similarity(query_embedding, item_embedding)
         scored_items.append({
             'cocktail_id': item.get('cocktail_id'),
             'score': score,
@@ -192,10 +196,35 @@ def fallback_search(query_embedding: List[float], k: int) -> List[Dict[str, Any]
             'category': item.get('category'),
             'description': item.get('enhanced_metadata', {}).get('description', '') if isinstance(item.get('enhanced_metadata'), dict) else ''
         })
-    
-    # Sort by score and return top k
+
     scored_items.sort(key=lambda x: x['score'], reverse=True)
     return scored_items[:k]
+
+
+def load_primary_embedding(embedding_id: str) -> List[float]:
+    """
+    Load the primary-chunk embedding for an item from S3 (embeddings/<id>.json).
+    Returns None if missing/unreadable so the caller can skip it cleanly.
+    """
+    if not embedding_id:
+        return None
+    try:
+        obj = s3.get_object(Bucket=EMBEDDINGS_BUCKET, Key=f"embeddings/{embedding_id}.json")
+        data = json.loads(obj['Body'].read())
+        return data['chunks'][0]['embedding']
+    except Exception as e:
+        print(f"Could not load embedding {embedding_id}: {e}")
+        return None
+
+
+def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
+    """Cosine similarity between two equal-length vectors (pure stdlib, no numpy)."""
+    dot = sum(a * b for a, b in zip(vec1, vec2))
+    mag1 = math.sqrt(sum(a * a for a in vec1))
+    mag2 = math.sqrt(sum(b * b for b in vec2))
+    if mag1 == 0 or mag2 == 0:
+        return 0.0
+    return dot / (mag1 * mag2)
 
 
 def enrich_results(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

@@ -23,7 +23,7 @@ Two parts: **what's deployed (MVP)** and **what's planned (v2)**. The MVP is the
 ┌──────────────────────────────────────────────────────────────┐
 │ 3. SEARCH + RAG (API Gateway)                                  │
 │                                                                │
-│   search Lambda : embed query → DynamoDB semantic search       │
+│   search Lambda : embed query → cosine vs S3 embeddings → top-K │
 │   rag Lambda    : retrieve top-K → build context →             │
 │                   Titan (temp 0.3) → grounded answer            │
 │                   (empty retrieval → "I don't know")            │
@@ -50,7 +50,7 @@ Two parts: **what's deployed (MVP)** and **what's planned (v2)**. The MVP is the
 | Ingestion | Lambda + EventBridge | Event-driven daily collection |
 | LLM | **Bedrock Titan Text Lite** | Metadata enrichment + RAG generation |
 | Embeddings | **Bedrock Titan Embeddings v2 (1024-dim)** | Vectorization |
-| Vector store / search | **DynamoDB** (semantic search) | Cheap KNN-style retrieval, no OpenSearch |
+| Semantic search | **S3-stored embeddings + cosine** | Real similarity ranking in Lambda, no OpenSearch |
 | Agent | Lambda tool-calling (`search_cocktails`) | Data-grounded conversation |
 | API | API Gateway + Lambda | REST endpoints |
 | Frontend | Next.js 14 + CloudFront | React UI |

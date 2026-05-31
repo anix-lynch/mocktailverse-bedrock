@@ -1,12 +1,12 @@
-# Mocktailverse — Serverless RAG on AWS Bedrock
+# Mocktailverse — AWS Serverless RAG Stack (end-to-end IaC)
 
-> 🟦 **L2 Action** in the [L1→L3 healthcare AI platform](https://gozeroshot.dev) — Truth → Features → Signals → Actions → Human adoption. This repo = a serverless RAG + agent platform on AWS Bedrock, using cocktail recipes as a safe public stand-in for enterprise data.
+> **What this repo proves:** I can stand up a complete **serverless GenAI stack on AWS, end-to-end, in Terraform** — 6 Lambdas, DynamoDB, S3, EventBridge, API Gateway, CloudFront — that scales to zero and runs for **~$1.56/month**. It's my AWS card (the rest of my stack is GCP). The GenAI layer is intentionally lean (Titan Text Lite + real cosine semantic search); for production RAG with eval metrics see the healthcare platform on [gozeroshot.dev](https://gozeroshot.dev).
 
 ![Demo](demo.gif)
 
 > **Demo status:** the live AWS stack is **torn down to keep cost at $0** between interviews. The GIF above is real proof-of-work from the deployed MVP; the whole stack is one `terraform apply` away (see [DEPLOYMENT.md](DEPLOYMENT.md)). No live link is shown rather than ship a dead one.
 
-A production-shaped GenAI data platform: semantic search, grounded RAG, and agent-style tool calling — all serverless, all on AWS Bedrock.
+Cocktail recipes are a public-safe stand-in for enterprise data. The architecture — semantic search, grounded RAG, single-tool agent — transfers directly; the focus here is **clean AWS serverless infrastructure**, not model sophistication.
 
 ---
 
@@ -94,8 +94,8 @@ Same architecture, cocktail domain instead of enterprise data so it's public-saf
 ### 1. AI-powered ingestion
 Pull recipes from an external API, use **Bedrock Titan Text Lite** to extract/enrich metadata (flavor profile, tasting notes, categories), store in DynamoDB.
 
-### 2. Semantic search
-Encode each recipe with **Bedrock Titan Embeddings v2 (1024-dim)**, search by meaning over DynamoDB.
+### 2. Semantic search (real cosine, no OpenSearch)
+Encode each recipe with **Bedrock Titan Embeddings v2 (1024-dim)**, store vectors in S3. Search embeds the query and ranks recipes by **actual cosine similarity** (`lambdas/search/handler.py:dynamodb_vector_search`) — no mock scores, no OpenSearch bill. (OpenSearch KNN is wired as an optional v2 path if an endpoint is configured.)
 
 ### 3. Grounded RAG
 Embed the question → retrieve top-K recipes → build context → answer **only** from that context with Titan at `temperature 0.3`. **If retrieval returns nothing, the endpoint returns `"I don't know"` instead of guessing** (`grounded: false`).

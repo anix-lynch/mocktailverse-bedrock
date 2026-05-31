@@ -4,7 +4,7 @@
 
 terraform {
   required_version = ">= 1.5.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -43,7 +43,7 @@ data "aws_region" "current" {}
 resource "aws_s3_bucket" "raw" {
   bucket        = "${var.project_name}-raw-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
-  
+
   tags = {
     Name        = "${var.project_name}-raw"
     Environment = var.environment
@@ -54,7 +54,7 @@ resource "aws_s3_bucket" "raw" {
 resource "aws_s3_bucket" "embeddings" {
   bucket        = "${var.project_name}-embeddings-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
-  
+
   tags = {
     Name        = "${var.project_name}-embeddings"
     Environment = var.environment
@@ -65,7 +65,7 @@ resource "aws_s3_bucket" "embeddings" {
 resource "aws_s3_bucket" "frontend" {
   bucket        = "${var.project_name}-frontend-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
-  
+
   tags = {
     Name        = "${var.project_name}-frontend"
     Environment = var.environment
@@ -76,7 +76,7 @@ resource "aws_s3_bucket" "frontend" {
 # S3 bucket configurations
 resource "aws_s3_bucket_versioning" "raw" {
   bucket = aws_s3_bucket.raw.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -102,7 +102,7 @@ resource "aws_s3_bucket_public_access_block" "embeddings" {
 
 resource "aws_s3_bucket_versioning" "embeddings" {
   bucket = aws_s3_bucket.embeddings.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -156,9 +156,9 @@ resource "aws_s3_bucket_policy" "frontend" {
 
 # DynamoDB Table
 resource "aws_dynamodb_table" "metadata" {
-  name           = "${var.project_name}-metadata"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "cocktail_id"
+  name         = "${var.project_name}-metadata"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "cocktail_id"
 
   attribute {
     name = "cocktail_id"
@@ -195,7 +195,7 @@ resource "aws_dynamodb_table" "metadata" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name                 = "${var.project_name}-lambda-role"
+  name                  = "${var.project_name}-lambda-role"
   force_detach_policies = true
 
   assume_role_policy = jsonencode({
@@ -292,8 +292,8 @@ resource "aws_lambda_function" "ingest" {
 
   environment {
     variables = {
-      RAW_BUCKET      = aws_s3_bucket.raw.id
-      METADATA_TABLE  = aws_dynamodb_table.metadata.name
+      RAW_BUCKET     = aws_s3_bucket.raw.id
+      METADATA_TABLE = aws_dynamodb_table.metadata.name
     }
   }
 
@@ -334,7 +334,8 @@ resource "aws_lambda_function" "search" {
 
   environment {
     variables = {
-      METADATA_TABLE = aws_dynamodb_table.metadata.name
+      METADATA_TABLE    = aws_dynamodb_table.metadata.name
+      EMBEDDINGS_BUCKET = aws_s3_bucket.embeddings.bucket
     }
   }
 
@@ -408,7 +409,7 @@ resource "aws_lambda_function" "search_tool" {
 resource "aws_apigatewayv2_api" "main" {
   name          = "${var.project_name}-api"
   protocol_type = "HTTP"
-  
+
   cors_configuration {
     allow_origins = ["*"]
     allow_methods = ["GET", "POST", "OPTIONS"]
@@ -543,7 +544,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 resource "aws_cloudwatch_event_rule" "daily_ingest" {
   name                = "${var.project_name}-daily-ingest"
   description         = "Trigger daily cocktail ingestion"
-  schedule_expression = "cron(0 2 * * ? *)"  # 2 AM UTC daily
+  schedule_expression = "cron(0 2 * * ? *)" # 2 AM UTC daily
 
   tags = {
     Name = "${var.project_name}-daily-ingest"
