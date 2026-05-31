@@ -1,6 +1,6 @@
 """
 Lambda: RAG Retrieval
-Purpose: Retrieval-Augmented Generation using Bedrock Claude
+Purpose: Retrieval-Augmented Generation using Amazon Titan Text Lite (Bedrock)
 Trigger: API Gateway /v1/rag endpoint
 """
 
@@ -38,11 +38,25 @@ def lambda_handler(event, context):
         
         # Step 1: Retrieve relevant cocktails
         context_docs = retrieve_context(question, k=k)
-        
+
+        # Refusal guard: never generate without grounding. No context -> "I don't know".
+        if not context_docs:
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({
+                    'question': question,
+                    'answer': "I don't know — I couldn't find any relevant recipes for that. Try rephrasing or asking about a specific cocktail.",
+                    'sources': [],
+                    'context_count': 0,
+                    'grounded': False
+                })
+            }
+
         # Step 2: Build context string
         context = build_context(context_docs)
-        
-        # Step 3: Generate answer with Claude
+
+        # Step 3: Generate answer grounded in retrieved context (Titan Text Lite)
         answer = generate_answer(question, context)
         
         return {
@@ -58,7 +72,8 @@ def lambda_handler(event, context):
                     }
                     for doc in context_docs
                 ],
-                'context_count': len(context_docs)
+                'context_count': len(context_docs),
+                'grounded': True
             })
         }
     
@@ -125,7 +140,7 @@ Preparation Time: {doc.get('prep_time_minutes', 'Unknown')} minutes
 
 def generate_answer(question: str, context: str) -> str:
     """
-    Generate answer using Bedrock Claude with RAG
+    Generate answer using Bedrock Titan Text Lite, grounded in retrieved context
     """
     prompt = f"""You are an expert bartender and mixologist. Answer the user's question based ONLY on the provided cocktail information. If the information doesn't contain the answer, say so.
 
@@ -151,7 +166,7 @@ Answer:"""
                 "inputText": prompt,
                 "textGenerationConfig": {
                     "maxTokenCount": 1000,
-                    "temperature": 0.7,
+                    "temperature": 0.3,
                     "topP": 0.9
                 }
             })

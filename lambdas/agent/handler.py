@@ -42,12 +42,12 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'Message parameter is required'})
             }
         
-        # If Bedrock Agent is configured, use it
+        # If a managed Bedrock Agent is configured, use it; otherwise run the
+        # direct Titan + DynamoDB-search tool path (current deployed default).
         if AGENT_ID:
             return handle_bedrock_agent(message, session_id, debug)
         else:
-            # Fallback: Direct Claude with tool calling
-            return handle_direct_claude(message, session_id, debug)
+            return handle_direct_llm(message, session_id, debug)
     
     except Exception as e:
         print(f"Error in agent: {str(e)}")
@@ -87,10 +87,10 @@ def handle_bedrock_agent(message: str, session_id: str, debug: bool = False) -> 
     }
 
 
-def handle_direct_claude(message: str, session_id: str, debug: bool = False) -> Dict[str, Any]:
+def handle_direct_llm(message: str, session_id: str, debug: bool = False) -> Dict[str, Any]:
     """
-    RAG-powered agent: Always search database first, then generate answer from real data
-    This makes it data-driven, not just generic LLM responses
+    RAG-powered agent (Titan Text Lite): always search DynamoDB first, then generate
+    the answer from real retrieved data — data-driven, not generic LLM output.
     """
     import time
     start_time = time.time()

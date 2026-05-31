@@ -2,10 +2,15 @@
 
 How Mocktailverse is built and deployed.
 
-## Live
+## Live status
 
-- **App:** https://dgco3hnxo94y8.cloudfront.net  
-- **API:** https://3m4c6fyw35.execute-api.us-west-2.amazonaws.com/prod  
+The AWS stack is **currently torn down to keep cost at $0** between interviews. It redeploys
+from this repo with one `terraform apply` (below). The endpoints below are the pattern the
+stack exposes once applied — read the live values from the Terraform `api_url` / CloudFront
+outputs after deploy:
+
+- **App:** CloudFront distribution domain (Terraform output)
+- **API:** `https://<api-id>.execute-api.us-west-2.amazonaws.com/prod`
 
 ## Architecture
 

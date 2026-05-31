@@ -3,22 +3,21 @@
 AWS Bedrock-powered semantic search & RAG system with LLM metadata extraction, vector embeddings, and conversational AI agents. Production-ready GenAI Data Engineering showcase.
 
 ## Key Features
-- 🤖 AWS Bedrock (Claude 3.5 + Titan Embeddings v2)
-- 🔍 Semantic vector search with KNN
-- 📚 RAG (Retrieval-Augmented Generation) pipeline
-- ⚡ Serverless architecture (Lambda + DynamoDB + S3)
-- 🎨 Next.js 14 frontend
+- 🤖 AWS Bedrock (Titan Text Lite + Titan Embeddings v2, 1024-dim)
+- 🔍 Semantic vector search over DynamoDB
+- 📚 Grounded RAG pipeline (refuses when context is missing)
+- ⚡ Serverless architecture (Lambda + DynamoDB + S3 + EventBridge)
+- 🎨 Next.js 14 frontend (S3 + CloudFront)
 - 🏗️ Infrastructure as Code (Terraform)
-- 💰 Cost-optimized ($1-5/month)
+- 💰 Cost-optimized (~$1.56/month when live)
 
 ## Topics
-`aws-bedrock` `genai` `rag` `vector-search` `semantic-search` `llm` `embeddings` `data-engineering` `ai-platform` `serverless` `terraform` `nextjs` `claude` `titan` `python` `typescript`
+`aws-bedrock` `genai` `rag` `vector-search` `semantic-search` `llm` `embeddings` `data-engineering` `ai-platform` `serverless` `terraform` `nextjs` `titan` `python` `typescript`
 
 ## Quick Links
 - 📖 [README](./README.md)
 - 🏗️ [Architecture](./ARCHITECTURE.md)
-- 🚀 [Deployment](./DEPLOYMENT.md)
-- 💼 [Live Demo](https://dgco3hnxo94y8.cloudfront.net)
+- 🚀 [Deployment](./DEPLOYMENT.md) (live stack torn down to $0 between interviews — redeploys via `terraform apply`)
 
 ---
 

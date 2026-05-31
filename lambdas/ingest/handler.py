@@ -1,6 +1,6 @@
 """
 Lambda: Ingest & Extract
-Purpose: Fetch cocktail data and use Bedrock Claude to extract/enrich metadata
+Purpose: Fetch cocktail data and use Bedrock Titan Text Lite to extract/enrich metadata
 Trigger: EventBridge schedule or S3 upload
 """
 
@@ -140,7 +140,7 @@ def process_cocktail(cocktail: Dict[str, Any]) -> Dict[str, Any]:
                 'measure': measure or ''
             })
     
-    # Use Bedrock Claude to extract enhanced metadata
+    # Use Bedrock Titan Text Lite to extract enhanced metadata
     enhanced_metadata = extract_metadata_with_llm(
         name=name,
         category=category,
@@ -193,7 +193,7 @@ def extract_metadata_with_llm(
     instructions: str
 ) -> Dict[str, Any]:
     """
-    Use Bedrock Claude to extract enhanced metadata
+    Use Bedrock Titan Text Lite to extract enhanced metadata
     """
     # Build ingredient list for prompt
     ingredient_list = ', '.join([ing['name'] for ing in ingredients])
